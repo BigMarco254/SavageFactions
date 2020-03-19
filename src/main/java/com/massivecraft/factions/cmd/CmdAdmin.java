@@ -4,6 +4,7 @@ import com.massivecraft.factions.FPlayer;
 import com.massivecraft.factions.FPlayers;
 import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.event.FPlayerJoinEvent;
+import com.massivecraft.factions.event.FactionOwnerTransferEvent;
 import com.massivecraft.factions.struct.Permission;
 import com.massivecraft.factions.struct.Role;
 import com.massivecraft.factions.zcore.util.TL;
@@ -74,7 +75,12 @@ public class CmdAdmin extends FCommand {
             fyou.msg(TL.COMMAND_ADMIN_DEMOTED, context.player == null ? TL.GENERIC_SERVERADMIN.toString() : context.fPlayer.describeTo(fyou, true));
             return;
         }
-
+        FactionOwnerTransferEvent transferEvent = new FactionOwnerTransferEvent(targetFaction, admin, fyou);
+        Bukkit.getServer().getPluginManager().callEvent(transferEvent);
+        if (transferEvent.isCancelled()) {
+            return;
+        }
+        fyou = transferEvent.getNewOwner();
         // promote target player, and demote existing admin if one exists
         if (admin != null) {
             admin.setRole(Role.COLEADER);

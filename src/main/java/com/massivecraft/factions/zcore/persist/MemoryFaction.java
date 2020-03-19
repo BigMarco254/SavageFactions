@@ -5,6 +5,7 @@ import com.massivecraft.factions.addon.upgradeaddon.Upgrade;
 import com.massivecraft.factions.event.FPlayerLeaveEvent;
 import com.massivecraft.factions.event.FactionDisbandEvent;
 import com.massivecraft.factions.event.FactionDisbandEvent.PlayerDisbandReason;
+import com.massivecraft.factions.event.FactionOwnerTransferEvent;
 import com.massivecraft.factions.iface.EconomyParticipator;
 import com.massivecraft.factions.iface.RelationParticipator;
 import com.massivecraft.factions.integration.Econ;
@@ -1179,12 +1180,18 @@ public abstract class MemoryFaction implements Faction, EconomyParticipator {
 
 			Factions.getInstance().removeFaction(getId());
 		} else { // promote new faction admin
+			FactionOwnerTransferEvent transferEvent = new FactionOwnerTransferEvent(this, oldLeader, replacements.get(0));
+			Bukkit.getServer().getPluginManager().callEvent(transferEvent);
+			if (transferEvent.isCancelled()) {
+				return;
+			}
 			if (oldLeader != null) {
 				oldLeader.setRole(Role.NORMAL);
 			}
-			replacements.get(0).setRole(Role.LEADER);
-			this.msg(TL.COMMAND_ADMIN_PROMOTEDAUTOLEAVE, oldLeader == null ? "" : oldLeader.getName(), replacements.get(0).getName());
-			SavageFactions.plugin.log("Faction " + this.getTag() + " (" + this.getId() + ") admin was removed. Replacement admin: " + replacements.get(0).getName());
+			FPlayer newLeader = transferEvent.getNewOwner();
+			newLeader.setRole(Role.LEADER);
+			this.msg(TL.COMMAND_ADMIN_PROMOTEDAUTOLEAVE, oldLeader == null ? "" : oldLeader.getName(), newLeader.getName());
+			SavageFactions.plugin.log("Faction " + this.getTag() + " (" + this.getId() + ") admin was removed. Replacement admin: " + newLeader.getName());
 		}
 	}
 

@@ -3,6 +3,7 @@ package com.massivecraft.factions.cmd;
 import com.massivecraft.factions.*;
 import com.massivecraft.factions.event.FPlayerJoinEvent;
 import com.massivecraft.factions.event.FactionCreateEvent;
+import com.massivecraft.factions.event.FactionPostCreateEvent;
 import com.massivecraft.factions.integration.Econ;
 import com.massivecraft.factions.struct.Permission;
 import com.massivecraft.factions.struct.Role;
@@ -93,6 +94,8 @@ public class CmdCreate extends FCommand {
                 follower.msg(TL.COMMAND_CREATE_CREATED, context.fPlayer.getName(), faction.getTag(follower));
             }
         }
+        FactionPostCreateEvent postCreateEvent = new FactionPostCreateEvent(faction);
+        Bukkit.getServer().getPluginManager().callEvent(postCreateEvent);
         context.msg(TL.COMMAND_CREATE_YOUSHOULD, SavageFactions.plugin.cmdBase.cmdDescription.getUseageTemplate(context));
         if (Conf.econEnabled) Econ.setBalance(faction.getAccountId(), Conf.econFactionStartingBalance);
         if (Conf.logFactionCreate)
